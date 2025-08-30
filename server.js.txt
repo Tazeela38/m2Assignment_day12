@@ -1,0 +1,41 @@
+// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const app = express();
+const PORT = 3000;
+
+// Middleware to parse JSON
+app.use(express.json());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://127.0.0.1:27017/studentDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('MongoDB Connected'))
+  .catch(err => console.error('MongoDB Connection Failed:', err));
+
+// Define Student Schema
+const studentSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  course: String
+});
+
+// Create Student Model
+const Student = mongoose.model('Student', studentSchema);
+
+// POST API to add student
+app.post('/add-student', async (req, res) => {
+  try {
+    const { name, email, course } = req.body;
+    const student = new Student({ name, email, course });
+    await student.save();
+    res.status(200).send('Student added successfully');
+  } catch (err) {
+    res.status(500).send('Error adding student: ' + err.message);
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
